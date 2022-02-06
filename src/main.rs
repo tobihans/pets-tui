@@ -297,14 +297,15 @@ fn add_random_pet_to_db() -> Result<Vec<Pet>, Error> {
     Ok(parsed)
 }
 
-// TODO: Fix crash when the element to delete if the first of the list
 fn remove_pet_at_index(pet_list_state: &mut ListState) -> Result<(), Error> {
     if let Some(selected) = pet_list_state.selected() {
         let db_content = fs::read_to_string(DB)?;
         let mut parsed: Vec<Pet> = serde_json::from_str(&db_content)?;
         parsed.remove(selected);
         fs::write(DB, &serde_json::to_string_pretty(&parsed)?)?;
-        pet_list_state.select(Some(selected - 1));
+        if parsed.len() == 0 { return Ok(()); }
+        let new_selection = if selected == 0 { 0 } else { selected - 1};
+        pet_list_state.select(Some(new_selection));
     }
     Ok(())
 }
